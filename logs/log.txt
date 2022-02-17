@@ -1,0 +1,1 @@
+DragonRuby GTK Log Messages. Set $gtk.log_level = :off to disable logging to the Console/HUD (log messages will still be written here). Log options are: :on, :off.
