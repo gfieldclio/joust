@@ -4,15 +4,14 @@ require 'app/sprites/platform_tile.rb'
 class Game
   attr_gtk
 
+  GRAVITY = -0.4
+
   def tick
     defaults
     render
   end
 
   def defaults
-    state.drag ||= 0.15
-    state.gravity ||= -0.4
-
     if args.state.tick_count == 0
       init_platforms
       init_player
@@ -55,5 +54,6 @@ class Game
 
   def render
     outputs.background_color = [20, 20, 20]
+    args.state.player.move
   end
 end

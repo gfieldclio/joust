@@ -1,22 +1,25 @@
 class Player
   attr_sprite
 
-  WIDTH = 40
-  STANDING_HEIGHT = 40
-  FLYING_HEIGHT = 20
+  SIZE = 40
 
   def initialize(grid, platform)
     mid_platform_x = (platform[:w] - platform[:x]) / 2
 
     @grid = grid
-    @x = mid_platform_x - (WIDTH / 2)
+    @x = mid_platform_x - (SIZE / 2)
     @y = platform[:y] + PlatformTile::TILE_SIZE
-    @w = WIDTH
-    @h = STANDING_HEIGHT
+    @w = SIZE
+    @h = SIZE
     @path = 'sprites/square/blue.png'
+
+    @velocity_x = 0
+    @velocity_y = 0
   end
 
   def move
+    @velocity_y += Game::GRAVITY
+    @y += @velocity_y
   end
 
   def serialize
