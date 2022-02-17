@@ -65,6 +65,8 @@ class Player
     end
 
     @x += @velocity_x
+    @x = @x - grid.right if @x > grid.right
+    @x = @x + grid.right if @x < 0
   end
 
   def move_y
