@@ -4,7 +4,7 @@ require 'app/sprites/platform_tile.rb'
 class Game
   attr_gtk
 
-  GRAVITY = -0.4
+  GRAVITY = -0.2
 
   def tick
     defaults
