@@ -14,14 +14,9 @@ class Game
     state.gravity ||= -0.4
 
     if args.state.tick_count == 0
-      init_player
       init_platforms
+      init_player
     end
-  end
-
-  def init_player
-    args.state.player = Player.new(args.grid)
-    args.outputs.static_sprites << args.state.player
   end
 
   def init_platforms
@@ -38,6 +33,11 @@ class Game
     args.state.platforms.each do |platform|
       platform.sprites.each { |platform_sprite| args.outputs.static_sprites << platform_sprite }
     end
+  end
+
+  def init_player
+    args.state.player = Player.new(args.grid, args.state.platforms.first)
+    args.outputs.static_sprites << args.state.player
   end
 
   def make_platform(x, y, num_tiles:)

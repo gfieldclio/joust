@@ -1,12 +1,18 @@
 class Player
   attr_sprite
 
-  def initialize(grid)
+  WIDTH = 40
+  STANDING_HEIGHT = 40
+  FLYING_HEIGHT = 20
+
+  def initialize(grid, platform)
+    mid_platform_x = (platform[:w] - platform[:x]) / 2
+
     @grid = grid
-    @x = 620
-    @y = 340
-    @w = 40
-    @h = 40
+    @x = mid_platform_x - (WIDTH / 2)
+    @y = platform[:y] + PlatformTile::TILE_SIZE
+    @w = WIDTH
+    @h = STANDING_HEIGHT
     @path = 'sprites/square/blue.png'
   end
 
