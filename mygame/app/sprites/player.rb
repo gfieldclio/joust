@@ -69,21 +69,41 @@ class Player
 
   def move_y
     @velocity_y += jumped? ? ACCELERATION_Y : Game::GRAVITY
-    platform = platform_below
 
-    if !platform.nil?
-      @velocity_y = 0
-      @y = platform.rect.y + platform.rect.h
+    if @velocity_y < 0
+      platform = platform_below
+
+      if !platform.nil?
+        @velocity_y = 0
+        @y = platform.rect.y + platform.rect.h
+      else
+        @y += @velocity_y
+      end
+    elsif @velocity_y > 0
+      platform = platform_above
+
+      if @y + @h + @velocity_y >= grid.top
+        @y = grid.top - @h
+        @velocity_y *= -0.8
+      elsif !platform.nil?
+        @velocity_y *= -0.5
+        @y = platform.rect.y - @h
+      else
+        @y += @velocity_y
+      end
     else
       @y += @velocity_y
     end
   end
 
   def platform_below
-    return unless @velocity_y <= 0
-
-    platforms_below = state.platforms { |platform| platform.rect.top <= player.y }
+    platforms_below = state.platforms { |platform| platform.rect.top <= bottom }
     find_collision(platforms_below, (rect_with_legs.merge y: rect_with_legs.y + @velocity_y))
+  end
+
+  def platform_above
+    platforms_above = state.platforms { |platform| platform.rect.bottom >= top }
+    find_collision(platforms_above, (rect_with_legs.merge y: rect_with_legs.y + @velocity_y))
   end
 
   def find_collision(entities, target)
@@ -102,6 +122,14 @@ class Player
     elsif inputs.right && !inputs.left
       :right
     end
+  end
+
+  def top
+    @y + @h
+  end
+
+  def bottom
+    @y
   end
 
   def rect_with_legs
