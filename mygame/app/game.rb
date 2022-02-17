@@ -35,7 +35,7 @@ class Game
   end
 
   def init_player
-    args.state.player = Player.new(args.grid, args.state.platforms.first)
+    args.state.player = Player.new(args)
     args.outputs.static_sprites << args.state.player
   end
 
@@ -43,13 +43,11 @@ class Game
     x_pos = x * PlatformTile::TILE_SIZE
     y_pos = y * PlatformTile::TILE_SIZE
 
-    {
-      x: x_pos,
-      y: y_pos,
-      w: x_pos + PlatformTile::TILE_SIZE * num_tiles,
-      h: PlatformTile::TILE_SIZE,
-      sprites: Array.new(num_tiles) {|i| PlatformTile.new(args.grid, x_pos + (PlatformTile::TILE_SIZE*i), y_pos) }
-    }
+    state.new_entity(
+      :platform,
+      rect: [x_pos, y_pos, PlatformTile::TILE_SIZE * num_tiles, PlatformTile::TILE_SIZE].rect.to_hash,
+      sprites: Array.new(num_tiles) { |i| PlatformTile.new(args.grid, x_pos + (PlatformTile::TILE_SIZE*i), y_pos) }
+    )
   end
 
   def render
