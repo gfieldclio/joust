@@ -10,11 +10,10 @@ class Player
 
   def initialize(args)
     platform = args.state.platforms.first
-    mid_platform_x = (platform.rect[:w] - platform.rect[:x]) / 2
 
     @args = args
-    @x = mid_platform_x - (SIZE / 2)
-    @y = platform.rect[:y] + PlatformTile::TILE_SIZE
+    @x = platform.spawn_point.x - (SIZE / 2)
+    @y = platform.spawn_point.y
     @w = SIZE
     @h = SIZE
     @flip_horizontally = false

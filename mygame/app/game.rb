@@ -47,8 +47,18 @@ class Game
 
     state.new_entity(
       :platform,
-      rect: [x_pos, y_pos, PlatformTile::TILE_SIZE * num_tiles, PlatformTile::TILE_SIZE].rect.to_hash
+      rect: [x_pos, y_pos, PlatformTile::TILE_SIZE * num_tiles, PlatformTile::TILE_SIZE].rect.to_hash,
+      spawn_point: nil
     ) do |platform|
+      if !spawn_point.nil?
+        platform.spawn_point = [
+          x_pos + (spawn_point * PlatformTile::TILE_SIZE) + (0.5 * PlatformTile::TILE_SIZE),
+          y_pos + PlatformTile::TILE_SIZE
+        ].point.to_hash
+
+        log_info(platform.spawn_point.to_s)
+      end
+
       platform.sprites = Array.new(num_tiles) do |i|
         path = PlatformTile::WALL_MIDDLE_PATH
         path = PlatformTile::WALL_LEFT_PATH if i == 0
