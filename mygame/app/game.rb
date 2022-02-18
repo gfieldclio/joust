@@ -13,38 +13,38 @@ class Game
   end
 
   def defaults
-    if args.state.tick_count == 0
+    if state.tick_count == 0
       init_platforms
       state.players = []
     end
   end
 
   def init_platforms
-    args.state.platforms = []
-    args.state.platforms << make_platform(0, 4, num_tiles: 64, spawn_point: 30)
-    args.state.platforms << make_platform(0, 14, num_tiles: 15, spawn_point: 8)
-    args.state.platforms << make_platform(0, 25, num_tiles: 14)
-    args.state.platforms << make_platform(24, 13, num_tiles: 17)
-    args.state.platforms << make_platform(22, 24, num_tiles: 20, spawn_point: 7)
-    args.state.platforms << make_platform(58, 14, num_tiles: 6)
-    args.state.platforms << make_platform(50, 15, num_tiles: 9, spawn_point: 5)
-    args.state.platforms << make_platform(58, 25, num_tiles: 6)
+    state.platforms = []
+    state.platforms << make_platform(0, 4, num_tiles: 64, spawn_point: 30)
+    state.platforms << make_platform(0, 14, num_tiles: 15, spawn_point: 8)
+    state.platforms << make_platform(0, 25, num_tiles: 14)
+    state.platforms << make_platform(24, 13, num_tiles: 17)
+    state.platforms << make_platform(22, 24, num_tiles: 20, spawn_point: 7)
+    state.platforms << make_platform(58, 14, num_tiles: 6)
+    state.platforms << make_platform(50, 15, num_tiles: 9, spawn_point: 5)
+    state.platforms << make_platform(58, 25, num_tiles: 6)
 
-    args.state.platforms.each do |platform|
-      platform.sprites.each { |platform_sprite| args.outputs.static_sprites << platform_sprite }
+    state.platforms.each do |platform|
+      platform.sprites.each { |platform_sprite| outputs.static_sprites << platform_sprite }
     end
   end
 
   def add_players
-    add_player('keyboard') if args.inputs.keyboard.key_down.c && args.state.players.none? {|player| player.controller == 'keyboard'}
-    add_player('controller_one') if args.inputs.controller_one.key_down.a && args.state.players.none? {|player| player.controller == 'controller_one'}
-    add_player('controller_two') if args.inputs.controller_two.key_down.a && args.state.players.none? {|player| player.controller == 'controller_two'}
+    add_player('keyboard') if inputs.keyboard.key_down.c && state.players.none? {|player| player.controller == 'keyboard'}
+    add_player('controller_one') if inputs.controller_one.key_down.a && state.players.none? {|player| player.controller == 'controller_one'}
+    add_player('controller_two') if inputs.controller_two.key_down.a && state.players.none? {|player| player.controller == 'controller_two'}
   end
 
   def add_player(controller)
     player = Player.new(args, controller)
-    args.state.players << player
-    args.outputs.static_sprites << player
+    state.players << player
+    outputs.static_sprites << player
   end
 
   def make_platform(x, y, num_tiles:, spawn_point: nil)
@@ -79,6 +79,6 @@ class Game
 
   def render
     outputs.background_color = [20, 20, 20]
-    args.state.players.each(&:move)
+    state.players.each(&:move)
   end
 end
