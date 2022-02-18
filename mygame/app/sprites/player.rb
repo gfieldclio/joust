@@ -26,8 +26,8 @@ class Player
   end
 
   def move
-    move_x
     move_y
+    move_x
   end
 
   def move_x
@@ -37,22 +37,18 @@ class Player
       if @decelerating
         @velocity_x -= DECCELERATION_X
         @velocity_x = [0, @velocity_x].max
-        @flip_horizontally = false
       else
         @velocity_x -= ACCELERATION_X
         @velocity_x = [-MAX_SPEED_X, @velocity_x].max
-        @flip_horizontally = true
       end
     when :right
       @decelerating = @velocity_x < 0
       if @decelerating
         @velocity_x += DECCELERATION_X
         @velocity_x = [0, @velocity_x].min
-        @flip_horizontally = true
       else
         @velocity_x += ACCELERATION_X
         @velocity_x = [MAX_SPEED_X, @velocity_x].min
-        @flip_horizontally = false
       end
     else
       if @decelerating
@@ -64,20 +60,35 @@ class Player
       end
     end
 
-    @x += @velocity_x
-    @x = @x - grid.right if @x > grid.right
-    @x = @x + grid.right if @x < 0
+    platform = platform_beside
+
+    if platform.nil?
+      @x += @velocity_x
+      @x = @x - grid.right if @x > grid.right
+      @x = @x + grid.right if @x < 0
+    else
+      @x = @velocity_x > 0 ? platform.rect.left - @w : platform.rect.right
+      @velocity_x *= -1
+    end
+
+    @flip_horizontally = facing_left?
+  end
+
+  def facing_left?
+    @velocity_x < 0 || (@velocity_x == 0 && @flip_horizontally)
   end
 
   def move_y
+    @grounded = false
     @velocity_y += jumped? ? ACCELERATION_Y : Game::GRAVITY
 
-    if @velocity_y < 0
+    if @velocity_y <= 0
       platform = platform_below
 
       if !platform.nil?
         @velocity_y = 0
         @y = platform.rect.y + platform.rect.h
+        @grounded = true
       else
         @y += @velocity_y
       end
@@ -93,19 +104,28 @@ class Player
       else
         @y += @velocity_y
       end
-    else
-      @y += @velocity_y
     end
   end
 
   def platform_below
-    platforms_below = state.platforms { |platform| platform.rect.top <= bottom }
-    find_collision(platforms_below, (rect_with_legs.merge y: rect_with_legs.y + @velocity_y))
+    platforms_below = state.platforms { |platform| platform.rect.top <= rect.bottom }
+    find_collision(platforms_below, (rect.merge y: @y + @velocity_y))
   end
 
   def platform_above
-    platforms_above = state.platforms { |platform| platform.rect.bottom >= top }
-    find_collision(platforms_above, (rect_with_legs.merge y: rect_with_legs.y + @velocity_y))
+    platforms_above = state.platforms { |platform| platform.rect.bottom >= rect.top }
+    find_collision(platforms_above, (rect.merge y: @y + @velocity_y))
+  end
+
+  def platform_beside
+    platforms_beside = state.platforms do |platform|
+      if @velocity_x > 0
+        platform.rect.left >= rect.right
+      else
+        platform.rect.right <= rect.left
+      end
+    end
+    find_collision(platforms_beside, (rect.merge x: @x + @velocity_x))
   end
 
   def find_collision(entities, target)
@@ -126,16 +146,8 @@ class Player
     end
   end
 
-  def top
-    @y + @h
-  end
-
-  def bottom
-    @y
-  end
-
-  def rect_with_legs
-    { x: @x, y: @y, w: @w, h: @h }
+  def rect
+    [@x, @y, @w, @h].rect.to_hash
   end
 
   def serialize
