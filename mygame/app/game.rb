@@ -55,8 +55,6 @@ class Game
           x_pos + (spawn_point * PlatformTile::TILE_SIZE) + (0.5 * PlatformTile::TILE_SIZE),
           y_pos + PlatformTile::TILE_SIZE
         ].point.to_hash
-
-        log_info(platform.spawn_point.to_s)
       end
 
       platform.sprites = Array.new(num_tiles) do |i|

@@ -63,7 +63,7 @@ class Player
 
     if platform.nil?
       @x += @velocity_x
-      @x = @x - grid.right if @x > grid.right
+      @x = @x - grid.right if @x >= grid.right
       @x = @x + grid.right if @x < 0
     else
       @x = @velocity_x > 0 ? platform.rect.left - @w : platform.rect.right
@@ -78,7 +78,6 @@ class Player
   end
 
   def move_y
-    @grounded = false
     @velocity_y += jumped? ? ACCELERATION_Y : Game::GRAVITY
 
     if @velocity_y <= 0
@@ -93,6 +92,7 @@ class Player
       end
     elsif @velocity_y > 0
       platform = platform_above
+      @grounded = false
 
       if @y + @h + @velocity_y >= grid.top
         @y = grid.top - @h
@@ -107,24 +107,28 @@ class Player
   end
 
   def platform_below
-    platforms_below = state.platforms { |platform| platform.rect.top <= rect.bottom }
-    find_collision(platforms_below, (rect.merge y: @y + @velocity_y))
+    platforms_below = state.platforms.find_all { |platform| platform.rect.top <= rect.bottom }
+    find_collision(platforms_below, (rect.merge y: (@y + @velocity_y).floor))
   end
 
   def platform_above
-    platforms_above = state.platforms { |platform| platform.rect.bottom >= rect.top }
-    find_collision(platforms_above, (rect.merge y: @y + @velocity_y))
+    platforms_above = state.platforms.find_all { |platform| platform.rect.bottom >= rect.top }
+    find_collision(platforms_above, (rect.merge y: (@y + @velocity_y).ceil))
   end
 
   def platform_beside
-    platforms_beside = state.platforms do |platform|
+    x_pos = @x + @velocity_x
+    x_pos = x_pos.ceil if @velocity_x > 1
+    x_pos = x_pos.floor if @velocity_x < 1
+
+    platforms_beside = state.platforms.find_all do |platform|
       if @velocity_x > 0
         platform.rect.left >= rect.right
       else
         platform.rect.right <= rect.left
       end
     end
-    find_collision(platforms_beside, (rect.merge x: @x + @velocity_x))
+    find_collision(platforms_beside, (rect.merge x: x_pos))
   end
 
   def find_collision(entities, target)
@@ -146,7 +150,7 @@ class Player
   end
 
   def rect
-    [@x, @y, @w, @h].rect.to_hash
+    [@x.floor, @y.floor, @w, @h].rect.to_hash
   end
 
   def serialize
@@ -155,7 +159,11 @@ class Player
       y: @y,
       w: @w,
       h: @h,
-      path: @path
+      flip_horizontally: @flip_horizontally,
+      path: @path,
+      velocity_x: @velocity_x,
+      velocity_y: @velocity_y,
+      decelerating: @decelerating
     }
   end
 
