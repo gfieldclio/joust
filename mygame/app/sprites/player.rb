@@ -3,7 +3,7 @@ class Player
   attr_sprite
 
   SIZE = 40
-  ACCELERATION_GROUNDED_X = 0.2
+  ACCELERATION_GROUNDED_X = 1
   DECCELERATION_GROUNDED_X = 0.3
   ACCELERATION_AIRBORN_X = 0.1
   ACCELERATION_Y = 3
@@ -31,6 +31,7 @@ class Player
     @velocity_y = 0
     @decelerating = false
     @grounded = true
+    @move_start = 0
   end
 
   def pick_spawn_point
@@ -120,8 +121,8 @@ class Player
       if @decelerating
         @velocity_x -= DECCELERATION_GROUNDED_X
         @velocity_x = [0, @velocity_x].max
-      else
-        @velocity_x -= ACCELERATION_GROUNDED_X
+      elsif ((@move_start - state.tick_count) % 5) == 0
+        @velocity_x -= ACCELERATION_GROUNDED_X.ceil
         @velocity_x = [-MAX_SPEED_X, @velocity_x].max
       end
     when :right
@@ -129,8 +130,8 @@ class Player
       if @decelerating
         @velocity_x += DECCELERATION_GROUNDED_X
         @velocity_x = [0, @velocity_x].min
-      else
-        @velocity_x += ACCELERATION_GROUNDED_X
+      elsif ((@move_start - state.tick_count) % 5) == 0
+        @velocity_x += ACCELERATION_GROUNDED_X.floor
         @velocity_x = [MAX_SPEED_X, @velocity_x].min
       end
     else
@@ -206,6 +207,7 @@ class Player
   end
 
   def move_direction
+    @move_start = state.tick_count if inputs.send(@controller).key_down.left_right
     case inputs.send(@controller).left_right
     when -1
       :left
