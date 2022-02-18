@@ -13,11 +13,18 @@ class Player
   CONTROLLER_ONE_SPRITE_PATH = 'sprites/square/green.png'
   CONTROLLER_TWO_SPRITE_PATH = 'sprites/square/white.png'
 
-  attr_accessor :controller
+  attr_accessor :controller, :killed
 
   def initialize(args, controller)
     @args = args
     @controller = controller
+
+    @velocity_x = 0
+    @velocity_y = 0
+    @decelerating = false
+    @grounded = true
+    @move_start = 0
+    @killed = false
 
     spawn_point = pick_spawn_point
     @x = spawn_point.x
@@ -26,12 +33,6 @@ class Player
     @h = SIZE
     @flip_horizontally = false
     @path = Player.const_get("#{@controller.upcase}_SPRITE_PATH")
-
-    @velocity_x = 0
-    @velocity_y = 0
-    @decelerating = false
-    @grounded = true
-    @move_start = 0
   end
 
   def pick_spawn_point
@@ -100,8 +101,8 @@ class Player
   def move_x
     move_x_grounded if @grounded
     move_x_airborn if !@grounded
-    platform = platform_beside
 
+    platform = platform_beside
     if platform.nil?
       @x += @velocity_x
       @x = @x - grid.right if @x >= grid.right
@@ -207,7 +208,10 @@ class Player
   end
 
   def move_direction
-    @move_start = state.tick_count if move_start?
+    if move_start?
+      @move_start = state.tick_count
+      log_info("move_start")
+    end
 
     case inputs.send(@controller).left_right
     when -1
@@ -218,11 +222,35 @@ class Player
   end
 
   def move_start?
-    if @controller == 'keyboard'
-      inputs.keyboard.key_down.left_right
-    else
-      inputs.send(@controller).key_down.left || inputs.send(@controller).key_down.right
+    inputs.send(@controller).key_down.left || inputs.send(@controller).key_down.right
+  end
+
+  def handle_collision(other_player)
+    if (other_player.rect.top - rect.top) > 2
+      @killed = true
+    elsif (other_player.rect.top - rect.top) > -2
+      if collided_head_first?(other_player)
+        @velocity_x *= -1
+        move_x
+      end
+    elsif bouncing_off?(other_player)
+      @velocity_y *= -1
     end
+  end
+
+  def collided_head_first?(other_player)
+    if @velocity_x > 0
+      rect.right < other_player.rect.right
+    else
+      rect.right > other_player.rect.right
+    end
+  end
+
+  def bouncing_off?(other_player)
+    return false if @grounded
+
+    @velocity_y < 0 &&
+      (other_player.rect.top - 1) < (rect.bottom - @velocity_y)
   end
 
   def rect

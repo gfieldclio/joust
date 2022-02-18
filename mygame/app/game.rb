@@ -10,6 +10,7 @@ class Game
     defaults
     render
     add_players
+    handle_player_collisions
   end
 
   def defaults
@@ -33,18 +34,6 @@ class Game
     state.platforms.each do |platform|
       platform.sprites.each { |platform_sprite| outputs.static_sprites << platform_sprite }
     end
-  end
-
-  def add_players
-    add_player('keyboard') if inputs.keyboard.key_down.c && state.players.none? {|player| player.controller == 'keyboard'}
-    add_player('controller_one') if inputs.controller_one.key_down.a && state.players.none? {|player| player.controller == 'controller_one'}
-    add_player('controller_two') if inputs.controller_two.key_down.a && state.players.none? {|player| player.controller == 'controller_two'}
-  end
-
-  def add_player(controller)
-    player = Player.new(args, controller)
-    state.players << player
-    outputs.static_sprites << player
   end
 
   def make_platform(x, y, num_tiles:, spawn_point: nil)
@@ -80,5 +69,33 @@ class Game
   def render
     outputs.background_color = [20, 20, 20]
     state.players.each(&:move)
+  end
+
+  def add_players
+    add_player('keyboard') if inputs.keyboard.key_down.c && state.players.none? {|player| player.controller == 'keyboard'}
+    add_player('controller_one') if inputs.controller_one.key_down.a && state.players.none? {|player| player.controller == 'controller_one'}
+    add_player('controller_two') if inputs.controller_two.key_down.a && state.players.none? {|player| player.controller == 'controller_two'}
+  end
+
+  def add_player(controller)
+    player = Player.new(args, controller)
+    state.players << player
+    outputs.static_sprites << player
+  end
+
+  def handle_player_collisions
+    state.players.each_index do |index|
+      player = state.players[index]
+      other_players = state.players[index + 1, 3]
+
+      next if player.nil? || other_players.empty?
+
+      other_player = other_players.find { |other_player| other_player.rect.intersect_rect?(player.rect) }
+
+      if !other_player.nil?
+        player.handle_collision(other_player)
+        other_player.handle_collision(player)
+      end
+    end
   end
 end
