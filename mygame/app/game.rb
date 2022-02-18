@@ -111,5 +111,21 @@ class Game
   def render
     outputs.background_color = [20, 20, 20]
     state.players.each { |player| outputs.sprites << player }
+    render_scores
+  end
+
+  def render_scores
+    mid_x = grid.right / 2
+
+    state.scores.each_with_index do |score, index|
+      outputs.primitives << {
+        x: mid_x - 300 + (index*200),
+        y: 40,
+        text: "Player #{index+1}: #{score.score}",
+        r: 255,
+        g: 255,
+        b: 255,
+      }.label!
+    end
   end
 end
