@@ -18,6 +18,7 @@ class Game
     if state.tick_count == 0
       init_platforms
       state.players = []
+      state.scores = []
     end
   end
 
@@ -80,6 +81,13 @@ class Game
   def add_player(controller)
     player = Player.new(args, controller)
     state.players << player
+
+    if state.scores.none? { |score| score.controller == player.controller }
+      state.scores << {
+        controller: player.controller,
+        score: 0
+      }
+    end
   end
 
   def handle_player_collisions

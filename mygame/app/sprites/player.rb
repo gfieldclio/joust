@@ -228,6 +228,7 @@ class Player
   def handle_collision(other_player)
     if (other_player.rect.top - rect.top) > 2
       @killed = true
+      state.scores.find { |score| score.controller == other_player.controller }.score += 1
     elsif (other_player.rect.top - rect.top) > -2
       if collided_head_first?(other_player)
         @velocity_x *= -1
