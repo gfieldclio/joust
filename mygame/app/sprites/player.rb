@@ -22,6 +22,7 @@ class Player
     @velocity_x = 0
     @velocity_y = 0
     @decelerating = false
+    @grounded = true
   end
 
   def move
@@ -85,6 +86,7 @@ class Player
 
       if !platform.nil?
         @velocity_y = 0
+        @h = SIZE
         @y = platform.rect.y + platform.rect.h
         @grounded = true
       else
@@ -92,7 +94,11 @@ class Player
       end
     elsif @velocity_y > 0
       platform = platform_above
-      @grounded = false
+      if @grounded == true
+        @h = SIZE / 2
+        @y += SIZE / 2
+        @grounded = false
+      end
 
       if @y + @h + @velocity_y >= grid.top
         @y = grid.top - @h
@@ -108,7 +114,13 @@ class Player
 
   def platform_below
     platforms_below = state.platforms.find_all { |platform| platform.rect.top <= rect.bottom }
-    find_collision(platforms_below, (rect.merge y: (@y + @velocity_y).floor))
+    y_collision_pos = @y + @velocity_y
+    y_collision_pos -= SIZE / 2 if !@grounded
+
+    find_collision(
+      platforms_below,
+      rect.merge(y: y_collision_pos.floor, h: SIZE)
+    )
   end
 
   def platform_above
