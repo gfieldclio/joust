@@ -169,13 +169,18 @@ class Player
   end
 
   def jumped?
-    args.inputs.controller_one.key_down.a || args.inputs.keyboard.key_down.space || args.inputs.keyboard.key_down.c
+    if @controller == 'keyboard'
+      args.inputs.keyboard.key_down.c
+    else
+      args.inputs.send(@controller).key_down.a
+    end
   end
 
   def move_direction
-    if inputs.left && !inputs.right
+    case inputs.send(@controller).left_right
+    when -1
       :left
-    elsif inputs.right && !inputs.left
+    when 1
       :right
     end
   end
