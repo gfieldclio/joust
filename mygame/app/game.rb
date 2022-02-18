@@ -8,9 +8,10 @@ class Game
 
   def tick
     defaults
-    render
+    move_players
     add_players
     handle_player_collisions
+    render
   end
 
   def defaults
@@ -66,8 +67,7 @@ class Game
     end
   end
 
-  def render
-    outputs.background_color = [20, 20, 20]
+  def move_players
     state.players.each(&:move)
   end
 
@@ -80,7 +80,6 @@ class Game
   def add_player(controller)
     player = Player.new(args, controller)
     state.players << player
-    outputs.static_sprites << player
   end
 
   def handle_player_collisions
@@ -97,5 +96,12 @@ class Game
         other_player.handle_collision(player)
       end
     end
+
+    state.players = state.players.reject(&:killed)
+  end
+
+  def render
+    outputs.background_color = [20, 20, 20]
+    state.players.each { |player| outputs.sprites << player }
   end
 end
