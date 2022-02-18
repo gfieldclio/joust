@@ -7,13 +7,19 @@ class PlatformTile
   WALL_MIDDLE_PATH = 'sprites/tile/wall-1010.png'.freeze
   WALL_RIGHT_PATH = 'sprites/tile/wall-1110.png'.freeze
 
-  def initialize(grid, x, y, path=WALL_MIDDLE_PATH)
+  def initialize(grid, x, y, path=WALL_MIDDLE_PATH, spawn_point=false)
     @grid = grid
     @x = x
     @y = y
     @w = TILE_SIZE
     @h = TILE_SIZE
     @path = path
+
+    if spawn_point
+      @r = 0
+      @g = 255
+      @b = 255
+    end
   end
 
   def serialize

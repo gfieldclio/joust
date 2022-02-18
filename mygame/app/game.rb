@@ -20,13 +20,13 @@ class Game
 
   def init_platforms
     args.state.platforms = []
-    args.state.platforms << make_platform(0, 4, num_tiles: 64)
-    args.state.platforms << make_platform(0, 14, num_tiles: 15)
+    args.state.platforms << make_platform(0, 4, num_tiles: 64, spawn_point: 30)
+    args.state.platforms << make_platform(0, 14, num_tiles: 15, spawn_point: 8)
     args.state.platforms << make_platform(0, 25, num_tiles: 14)
     args.state.platforms << make_platform(24, 13, num_tiles: 17)
-    args.state.platforms << make_platform(22, 24, num_tiles: 20)
+    args.state.platforms << make_platform(22, 24, num_tiles: 20, spawn_point: 7)
     args.state.platforms << make_platform(58, 14, num_tiles: 6)
-    args.state.platforms << make_platform(50, 15, num_tiles: 9)
+    args.state.platforms << make_platform(50, 15, num_tiles: 9, spawn_point: 5)
     args.state.platforms << make_platform(58, 25, num_tiles: 6)
 
     args.state.platforms.each do |platform|
@@ -39,9 +39,11 @@ class Game
     args.outputs.static_sprites << args.state.player
   end
 
-  def make_platform(x, y, num_tiles:)
+  def make_platform(x, y, num_tiles:, spawn_point: nil)
     x_pos = x * PlatformTile::TILE_SIZE
     y_pos = y * PlatformTile::TILE_SIZE
+    spawn_point_range = []
+    spawn_point_range = (spawn_point - 2..spawn_point + 2).to_a if !spawn_point.nil?
 
     state.new_entity(
       :platform,
@@ -51,8 +53,10 @@ class Game
         path = PlatformTile::WALL_MIDDLE_PATH
         path = PlatformTile::WALL_LEFT_PATH if i == 0
         path = PlatformTile::WALL_RIGHT_PATH if i == (num_tiles - 1)
+        path = PlatformTile::WALL_LEFT_PATH if i == spawn_point_range.first
+        path = PlatformTile::WALL_RIGHT_PATH if i == spawn_point_range.last
 
-        PlatformTile.new(args.grid, x_pos + (PlatformTile::TILE_SIZE*i), y_pos, path)
+        PlatformTile.new(args.grid, x_pos + (PlatformTile::TILE_SIZE*i), y_pos, path, spawn_point_range.include?(i))
       end
     end
   end
