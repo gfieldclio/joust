@@ -207,12 +207,21 @@ class Player
   end
 
   def move_direction
-    @move_start = state.tick_count if inputs.send(@controller).key_down.left_right
+    @move_start = state.tick_count if move_start?
+
     case inputs.send(@controller).left_right
     when -1
       :left
     when 1
       :right
+    end
+  end
+
+  def move_start?
+    if @controller == 'keyboard'
+      inputs.keyboard.key_down.left_right
+    else
+      inputs.send(@controller).key_down.left || inputs.send(@controller).key_down.right
     end
   end
 
