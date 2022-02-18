@@ -2,7 +2,7 @@ class Player
   attr_gtk
   attr_sprite
 
-  SIZE = 40
+  SIZE = 60
   ACCELERATION_GROUNDED_X = 1
   DECCELERATION_GROUNDED_X = 0.3
   ACCELERATION_AIRBORN_X = 0.1
@@ -91,8 +91,8 @@ class Player
 
   def take_flight
     if @grounded == true
-      @h = SIZE / 2
-      @y += SIZE / 2
+      @h = SIZE * 2 / 3
+      @y += SIZE * 1 / 3
       @grounded = false
     end
   end
