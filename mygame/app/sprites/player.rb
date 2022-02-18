@@ -3,8 +3,9 @@ class Player
   attr_sprite
 
   SIZE = 40
-  ACCELERATION_X = 0.2
-  DECCELERATION_X = 0.3
+  ACCELERATION_GROUNDED_X = 0.2
+  DECCELERATION_GROUNDED_X = 0.3
+  ACCELERATION_AIRBORN_X = 0.1
   ACCELERATION_Y = 3
   MAX_SPEED_X = 10
 
@@ -52,36 +53,52 @@ class Player
     move_x
   end
 
-  def move_x
-    case move_direction
-    when :left
-      @decelerating = @velocity_x > 0
-      if @decelerating
-        @velocity_x -= DECCELERATION_X
-        @velocity_x = [0, @velocity_x].max
+  def move_y
+    @velocity_y += jumped? ? ACCELERATION_Y : Game::GRAVITY
+
+    if @velocity_y <= 0
+      platform = platform_below
+
+      if !platform.nil?
+        land(platform)
       else
-        @velocity_x -= ACCELERATION_X
-        @velocity_x = [-MAX_SPEED_X, @velocity_x].max
+        @y += @velocity_y
+        take_flight
       end
-    when :right
-      @decelerating = @velocity_x < 0
-      if @decelerating
-        @velocity_x += DECCELERATION_X
-        @velocity_x = [0, @velocity_x].min
+    elsif @velocity_y > 0
+      platform = platform_above
+      take_flight
+
+      if @y + @h + @velocity_y >= grid.top
+        @y = grid.top - @h
+        @velocity_y *= -0.8
+      elsif !platform.nil?
+        @velocity_y *= -0.5
+        @y = platform.rect.y - @h
       else
-        @velocity_x += ACCELERATION_X
-        @velocity_x = [MAX_SPEED_X, @velocity_x].min
-      end
-    else
-      if @decelerating
-        if @velocity_x > 0
-          @velocity_x = [@velocity_x - DECCELERATION_X, 0].max
-        else
-          @velocity_x = [@velocity_x + DECCELERATION_X, 0].min
-        end
+        @y += @velocity_y
       end
     end
+  end
 
+  def land(platform)
+    @velocity_y = 0
+    @h = SIZE
+    @y = platform.rect.y + platform.rect.h
+    @grounded = true
+  end
+
+  def take_flight
+    if @grounded == true
+      @h = SIZE / 2
+      @y += SIZE / 2
+      @grounded = false
+    end
+  end
+
+  def move_x
+    move_x_grounded if @grounded
+    move_x_airborn if !@grounded
     platform = platform_beside
 
     if platform.nil?
@@ -96,42 +113,51 @@ class Player
     @flip_horizontally = facing_left?
   end
 
-  def facing_left?
-    @velocity_x < 0 || (@velocity_x == 0 && @flip_horizontally)
-  end
-
-  def move_y
-    @velocity_y += jumped? ? ACCELERATION_Y : Game::GRAVITY
-
-    if @velocity_y <= 0
-      platform = platform_below
-
-      if !platform.nil?
-        @velocity_y = 0
-        @h = SIZE
-        @y = platform.rect.y + platform.rect.h
-        @grounded = true
+  def move_x_grounded
+    case move_direction
+    when :left
+      @decelerating = @velocity_x > 0
+      if @decelerating
+        @velocity_x -= DECCELERATION_GROUNDED_X
+        @velocity_x = [0, @velocity_x].max
       else
-        @y += @velocity_y
+        @velocity_x -= ACCELERATION_GROUNDED_X
+        @velocity_x = [-MAX_SPEED_X, @velocity_x].max
       end
-    elsif @velocity_y > 0
-      platform = platform_above
-      if @grounded == true
-        @h = SIZE / 2
-        @y += SIZE / 2
-        @grounded = false
-      end
-
-      if @y + @h + @velocity_y >= grid.top
-        @y = grid.top - @h
-        @velocity_y *= -0.8
-      elsif !platform.nil?
-        @velocity_y *= -0.5
-        @y = platform.rect.y - @h
+    when :right
+      @decelerating = @velocity_x < 0
+      if @decelerating
+        @velocity_x += DECCELERATION_GROUNDED_X
+        @velocity_x = [0, @velocity_x].min
       else
-        @y += @velocity_y
+        @velocity_x += ACCELERATION_GROUNDED_X
+        @velocity_x = [MAX_SPEED_X, @velocity_x].min
+      end
+    else
+      if @decelerating
+        if @velocity_x > 0
+          @velocity_x = [@velocity_x - DECCELERATION_GROUNDED_X, 0].max
+        else
+          @velocity_x = [@velocity_x + DECCELERATION_GROUNDED_X, 0].min
+        end
       end
     end
+  end
+
+  def move_x_airborn
+    @decelerating = false
+    case move_direction
+    when :left
+      @velocity_x -= ACCELERATION_AIRBORN_X
+      @velocity_x = [-MAX_SPEED_X, @velocity_x].max
+    when :right
+      @velocity_x += ACCELERATION_AIRBORN_X
+      @velocity_x = [MAX_SPEED_X, @velocity_x].min
+    end
+  end
+
+  def facing_left?
+    @velocity_x < 0 || (@velocity_x == 0 && @flip_horizontally)
   end
 
   def platform_below
