@@ -45,9 +45,16 @@ class Game
 
     state.new_entity(
       :platform,
-      rect: [x_pos, y_pos, PlatformTile::TILE_SIZE * num_tiles, PlatformTile::TILE_SIZE].rect.to_hash,
-      sprites: Array.new(num_tiles) { |i| PlatformTile.new(args.grid, x_pos + (PlatformTile::TILE_SIZE*i), y_pos) }
-    )
+      rect: [x_pos, y_pos, PlatformTile::TILE_SIZE * num_tiles, PlatformTile::TILE_SIZE].rect.to_hash
+    ) do |platform|
+      platform.sprites = Array.new(num_tiles) do |i|
+        path = PlatformTile::WALL_MIDDLE_PATH
+        path = PlatformTile::WALL_LEFT_PATH if i == 0
+        path = PlatformTile::WALL_RIGHT_PATH if i == (num_tiles - 1)
+
+        PlatformTile.new(args.grid, x_pos + (PlatformTile::TILE_SIZE*i), y_pos, path)
+      end
+    end
   end
 
   def render
