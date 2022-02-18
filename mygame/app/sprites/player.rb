@@ -8,8 +8,15 @@ class Player
   ACCELERATION_Y = 3
   MAX_SPEED_X = 10
 
-  def initialize(args)
+  KEYBOARD_SPRITE_PATH = 'sprites/square/blue.png'
+  CONTROLLER_ONE_SPRITE_PATH = 'sprites/square/green.png'
+  CONTROLLER_TWO_SPRITE_PATH = 'sprites/square/white.png'
+
+  attr_accessor :controller
+
+  def initialize(args, controller)
     @args = args
+    @controller = controller
 
     spawn_point = pick_spawn_point
     @x = spawn_point.x
@@ -17,7 +24,7 @@ class Player
     @w = SIZE
     @h = SIZE
     @flip_horizontally = false
-    @path = 'sprites/square/blue.png'
+    @path = Player.const_get("#{@controller.upcase}_SPRITE_PATH")
 
     @velocity_x = 0
     @velocity_y = 0

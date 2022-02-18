@@ -9,12 +9,13 @@ class Game
   def tick
     defaults
     render
+    add_players
   end
 
   def defaults
     if args.state.tick_count == 0
       init_platforms
-      init_player
+      state.players = []
     end
   end
 
@@ -34,9 +35,16 @@ class Game
     end
   end
 
-  def init_player
-    args.state.player = Player.new(args)
-    args.outputs.static_sprites << args.state.player
+  def add_players
+    add_player('keyboard') if args.inputs.keyboard.key_down.c && args.state.players.none? {|player| player.controller == 'keyboard'}
+    add_player('controller_one') if args.inputs.controller_one.key_down.a && args.state.players.none? {|player| player.controller == 'controller_one'}
+    add_player('controller_two') if args.inputs.controller_two.key_down.a && args.state.players.none? {|player| player.controller == 'controller_two'}
+  end
+
+  def add_player(controller)
+    player = Player.new(args, controller)
+    args.state.players << player
+    args.outputs.static_sprites << player
   end
 
   def make_platform(x, y, num_tiles:, spawn_point: nil)
@@ -71,6 +79,6 @@ class Game
 
   def render
     outputs.background_color = [20, 20, 20]
-    args.state.player.move
+    args.state.players.each(&:move)
   end
 end
