@@ -35,8 +35,11 @@ class Player
   def pick_spawn_point
     spawn_point = args.state.platforms
       .find_all { |platform| !platform.spawn_point.nil? }
+      .map(&:spawn_point)
+      .find_all do |spawn_point|
+        state.players.none? { |player| geometry.distance(spawn_point, player.rect) <= 100 }
+      end
       .sample
-      .spawn_point
 
     [
       spawn_point.x - (SIZE / 2).to_i,
