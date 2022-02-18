@@ -9,11 +9,11 @@ class Player
   MAX_SPEED_X = 10
 
   def initialize(args)
-    platform = args.state.platforms.first
-
     @args = args
-    @x = platform.spawn_point.x - (SIZE / 2)
-    @y = platform.spawn_point.y
+
+    spawn_point = pick_spawn_point
+    @x = spawn_point.x
+    @y = spawn_point.y
     @w = SIZE
     @h = SIZE
     @flip_horizontally = false
@@ -23,6 +23,18 @@ class Player
     @velocity_y = 0
     @decelerating = false
     @grounded = true
+  end
+
+  def pick_spawn_point
+    spawn_point = args.state.platforms
+      .find_all { |platform| !platform.spawn_point.nil? }
+      .sample
+      .spawn_point
+
+    [
+      spawn_point.x - (SIZE / 2).to_i,
+      spawn_point.y
+    ].point.to_hash
   end
 
   def move
